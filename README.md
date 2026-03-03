@@ -68,19 +68,14 @@ Example topics:
 ### Gazebo Simulation
 
 <p align="center">
-  <img src="assets/gazebo_world.png" width="800"/>
+  <img src="sim_env/Screenshot from 2025-11-30 15-02-26.png" width="800"/>
 </p>
 
-### Drone Camera View
-
-<p align="center">
-  <img src="assets/drone_view.png" width="800"/>
-</p>
 
 ### Vision Processing Output
 
 <p align="center">
-  <img src="assets/rviz_detection.png" width="800"/>
+  <img src="sim_env/Screenshot from 2026-03-01 16-54-19.png" width="800"/>
 </p>
 
 ---
