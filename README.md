@@ -15,22 +15,6 @@ The goal of this project is to provide a modular simulation framework for develo
 
 ---
 
-## 🏗 Project Structure
-
-```
-Simulation-Environment/
-│
-├── src/
-│   └── <your_ros2_package>/
-│
-├── assets/
-│   └── images used in README
-│
-└── README.md
-```
-
----
-
 ## 🌍 Simulation Environment
 
 The project uses **Gazebo** to simulate a drone equipped with camera sensors.
