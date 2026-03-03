@@ -89,12 +89,68 @@ Example topics:
 * sensor_msgs
 
 ---
-
 ## 🚀 How to Build
 
+This simulation integrates with the `ardupilot_gz` packages inside your ArduPilot ROS 2 workspace (`ardu_ws`).
+
+### 1️⃣ Move Required Files
+
+Copy the following files into the ArduPilot Gazebo workspace:
+
+* Move the world file:
+
+```
+iris_rubicon.sdf
+```
+
+to:
+
+```
+ardu_ws/src/ardupilot_gz/ardupilot_gz_gazebo/worlds/
+```
+
+* Move the launch file:
+
+```
+iris_rubicon.launch.py
+```
+
+to:
+
+```
+ardu_ws/src/ardupilot_gz/ardupilot_gz_bringup/launch/
+```
+
+You can use:
+
 ```bash
-cd ~/ros2_ws
-colcon build
+mv iris_rubicon.sdf ~/ardu_ws/src/ardupilot_gz/ardupilot_gz_gazebo/worlds/
+mv iris_rubicon.launch.py ~/ardu_ws/src/ardupilot_gz/ardupilot_gz_bringup/launch/
+```
+
+---
+
+### 2️⃣ Build the Required Packages
+
+Navigate to your ArduPilot workspace:
+
+```bash
+cd ~/ardu_ws
+```
+
+Then build the required packages:
+
+```bash
+colcon build --packages-select ardupilot_gz_bringup ardupilot_gz_gazebo
+```
+
+---
+
+### 3️⃣ Source the Workspace
+
+After building:
+
+```bash
 source install/setup.bash
 ```
 
@@ -105,13 +161,14 @@ source install/setup.bash
 Launch simulation:
 
 ```bash
-ros2 launch <your_package> simulation.launch.py
+cd ~ardu_ws
+ros2 launch iris_rubicon.launch.py
 ```
 
 Run vision node:
 
 ```bash
-ros2 run <your_package> vision_node
+ros2 run uav_vision rgb_yolo 
 ```
 
 ---
