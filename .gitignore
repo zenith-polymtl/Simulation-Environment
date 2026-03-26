@@ -1,0 +1,8 @@
+# Ignore nested UAV vision repo
+uav_vision/uav_vision/.git
+
+# Ignore build / logs / virtualenv
+build/
+install/
+log/
+venv/
