@@ -1,187 +1,148 @@
-# Simulation Environment
+# 🚁 Vision-Based Drone Simulation Environment
 
-This repository provides a **complete simulation pipeline** for developing, testing, and validating robotic systems in a controlled virtual environment.
+This repository provides a **complete simulation environment for vision-based drone control**, integrating:
 
-It integrates multiple ROS 2 packages, external dependencies (via Git submodules), and simulation tools into a unified workflow.
+- 🛸 ArduPilot SITL (autonomous flight stack)
+- 🌍 Gazebo simulation world
+- 👁️ Computer vision models (YOLO-based detection)
+- 🎯 Visual servoing with PID control
 
----
-
-## 🚀 Overview
-
-The goal of this project is to:
-
-* Provide a **modular simulation environment**
-* Enable **rapid testing of algorithms and systems**
-* Support **multi-package ROS 2 workflows**
-* Ensure reproducibility using **version-controlled dependencies**
-
-The repository acts as a **superproject**, orchestrating several submodules and workspaces into a single simulation pipeline.
+The goal is to test and develop **end-to-end perception → decision → control pipelines** for autonomous UAV systems in a realistic simulation environment.
 
 ---
 
-## 🏗️ Architecture
+## 🧠 Overview
 
-The project is structured around:
+This project enables a simulated drone to:
 
-```
-.
-├── packages/          # External ROS 2 packages (git submodules)
-├── workspaces/        # Simulation workspaces
-├── scripts/           # Utility scripts (setup, linking, etc.)
-├── .gitmodules        # Submodule configuration
-```
+1. Spawn inside a Gazebo environment
+2. Receive real-time RGB camera data
+3. Run YOLO-based object detection
+4. Estimate object position (2D and optional 3D inference)
+5. Perform visual servoing using PID control
+6. Send commands to ArduPilot for flight control
 
-### Key Concepts
-
-* **Submodules**: External repositories tracked at specific commits
-* **Workspaces**: ROS 2 environments configured for specific missions
-* **Scripts**: Automation tools for setup and maintenance
+The full system forms a closed-loop autonomous perception and control pipeline.
 
 ---
+🚀 Features
+🛸 Simulation
+ArduPilot SITL integration
+Gazebo physics-based drone simulation
+Iris-based UAV model
+Custom world configuration (iris_rubicon.sdf)
+👁️ Vision System
+YOLO-based object detection
+Multiple pretrained models supported
+Real-time RGB image processing
+Optional pose estimation pipeline
+🎯 Control System
+Visual servoing loop (image → motion)
+PID controller for trajectory correction
+Closed-loop tracking of detected targets
+⚙️ Requirements
+System dependencies
+ROS 2 (Humble recommended)
+ArduPilot SITL
+Gazebo
+Python ≥ 3.8
+Python dependencies
 
-## 📦 Dependencies
+Install required packages:
 
-This project relies on:
+pip install numpy opencv-python torch ultralytics
 
-* ROS 2 (Humble or compatible)
-* Git (with submodule support)
-* Docker (optional, depending on setup)
-* Simulation tools (e.g., Gazebo / SITL)
+If using ROS 2 Python nodes:
 
----
+pip install rclpy
+🔧 Setup
+1. Clone repository
+git clone <your-repo-url>
+cd <repo-name>
+2. Launch simulation environment
 
-## 🔧 Installation
+Start Gazebo + drone simulation:
 
-### 1. Clone the repository
+ros2 launch sim_env iris_rubicon.launch.py
 
-```bash
-git clone https://github.com/zenith-polymtl/Simulation-Environment.git
-cd Simulation-Environment
-```
+This will:
 
-### 2. Initialize submodules
+Launch Gazebo world
+Spawn the drone model
+Initialize ArduPilot interface
+3. Run vision pipeline
 
-```bash
-git submodule update --init --recursive
-```
+Run the main vision system:
 
-Or use the provided script:
+python3 vision_node.py
 
-```bash
-./scripts/ensure_submodules.sh
-```
+Or run YOLO directly:
 
-This ensures all dependencies are properly fetched and aligned.
+python3 rgb_yolo.py
+4. Run visual servoing controller
 
----
+Start closed-loop control:
 
-## 🧪 Usage
+python3 yolo_PID_approach.py
 
-### Setup a workspace
+This script:
 
-```bash
-./scripts/link_ws.sh workspaces/<workspace_name>
-```
+Detects target using YOLO
+Computes image error
+Estimates position (optional 3D step)
+Sends control commands to ArduPilot
+🧪 Core Pipeline
+Camera Stream → YOLO Detection → Pose / Position Estimation → PID Controller → ArduPilot → Drone Motion
+🧠 Models
 
-### Build the workspace
+The models/ directory contains pretrained neural networks:
 
-```bash
-cd workspaces/<workspace_name>
-colcon build
-```
+best.pt → main detection model
+best-medium.pt → balanced speed/accuracy model
+yolo_m_100_epoch.pt → custom trained model
+yolov8n-seg.pt → segmentation model
 
-### Run the simulation
+These models are used for real-time inference on simulated camera feeds.
 
-Depending on your setup:
+📡 Simulation Environment
 
-```bash
-source install/setup.bash
-ros2 launch <package> <launch_file>
-```
+Located in sim_env/:
 
----
+iris_rubicon.sdf → defines drone + Gazebo world
+iris_rubicon.launch.py → ROS 2 launch file
+screenshots/ → visual outputs of simulation setup
+🎮 Visual Servoing Concept
 
-## 🔄 Submodule Management
+The control loop is based on:
 
-This repository uses Git submodules to manage external packages.
+Capturing image from drone camera
+Running YOLO detection on frame
+Computing error between target and image center
+Estimating depth / 3D position (optional step)
+Applying PID controller
+Sending velocity/position commands to ArduPilot
 
-### Update submodules
+This enables autonomous target tracking in simulation.
 
-```bash
-git submodule update --remote
-```
+⚠️ Notes
+Ensure ArduPilot SITL is running before launching control scripts
+Verify ROS 2 topics for camera streams
+Model paths must be correct relative to working directory
+Gazebo and ArduPilot must be properly synchronized
+📌 Future Improvements
+Multi-drone simulation support
+Improved 3D depth estimation (SLAM / stereo vision)
+Reinforcement learning-based control
+Better integration with MAVROS / MAVLink
+Hardware deployment (real drone transfer)
+👥 Authors
+Zenith Simulation Team
+📜 License
 
-### Sync submodules
+Specify your license here (e.g., MIT, Apache 2.0)
 
-```bash
-git submodule sync --recursive
-```
-
-### Common issues
-
-* **Empty folders after clone** → run `git submodule update --init --recursive`
-* **Detached HEAD state** → expected behavior for submodules
-
----
-
-## 📁 Workspaces
-
-Each workspace defines a specific simulation configuration.
-
-Example:
-
-```
-workspaces/
-└── water_ws/
-    ├── src/
-    └── pkgs.txt
-```
-
-The `pkgs.txt` file specifies which packages are included in that workspace.
-
----
-
-## 🧰 Scripts
-
-* `ensure_submodules.sh` → Initializes and updates submodules
-* `link_ws.sh` → Links selected packages into a workspace
-
----
-
-## 🧠 Development Workflow
-
-1. Update submodules if needed
-2. Select or create a workspace
-3. Build with `colcon`
-4. Run simulations via ROS 2 launch files
-
----
-
-## ⚠️ Notes
-
-* Submodules are pinned to specific commits for reproducibility
-* Some packages may track custom branches
-* Simulation configurations may vary depending on the mission
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Open a pull request
-
----
-
-## 📜 License
-
-Specify your license here (MIT, Apache 2.0, etc.)
-
----
-
-## 👥 Authors
-
-* Zenith Polytechnique Montréal Team
-
----
+🤝 Acknowledgements
+ArduPilot project
+Gazebo simulation environment
+Ultralytics YOLO models
+ROS 2 ecosystem
