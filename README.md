@@ -1,148 +1,140 @@
 # 🚁 Vision-Based Drone Simulation Environment
 
-This repository provides a **complete simulation environment for vision-based drone control**, integrating:
+This repository provides a **complete simulation environment for vision-based drone control**, integrating autonomous flight stacks, physics-based simulation, and real-time computer vision.
 
-- 🛸 ArduPilot SITL (autonomous flight stack)
-- 🌍 Gazebo simulation world
-- 👁️ Computer vision models (YOLO-based detection)
-- 🎯 Visual servoing with PID control
-
-The goal is to test and develop **end-to-end perception → decision → control pipelines** for autonomous UAV systems in a realistic simulation environment.
+The goal is to test and develop **end-to-end perception → decision → control pipelines** for autonomous UAV systems.
 
 ---
 
 ## 🧠 Overview
 
-This project enables a simulated drone to:
+The full system forms a closed-loop autonomous pipeline enabling a simulated drone to:
 
-1. Spawn inside a Gazebo environment
-2. Receive real-time RGB camera data
-3. Run YOLO-based object detection
-4. Estimate object position (2D and optional 3D inference)
-5. Perform visual servoing using PID control
-6. Send commands to ArduPilot for flight control
+1. **Simulate**: Spawn inside a Gazebo environment with ArduPilot SITL.
+2. **Perceive**: Process real-time RGB camera data via YOLO-based object detection.
+3. **Estimate**: Infer object position (2D and optional 3D depth).
+4. **Control**: Execute visual servoing using a PID controller.
+5. **Actuate**: Send MAVLink commands to ArduPilot for physical motion.
+<img src="sim_env/Screenshot from 2025-11-30 15-02-26.png" alt="Alt Text" width="500">
+<img src="sim_env/Screenshot from 2026-03-01 16-54-19.png" alt="Alt Text" width="500">
+---
 
-The full system forms a closed-loop autonomous perception and control pipeline.
+## 🚀 Features
+
+### 🛸 Simulation Stack
+* **ArduPilot SITL** integration for flight logic.
+* **Gazebo** physics-based environment.
+* **Iris-based UAV** model with custom sensor configurations.
+* Custom world definitions (`iris_rubicon.sdf`).
+
+### 👁️ Vision System
+* **YOLO-based** real-time object detection.
+* Support for multiple pretrained and custom `.pt` models.
+* Real-time RGB stream processing via OpenCV/ROS 2.
+
+### 🎯 Control System
+* **Visual Servoing** loop (image-plane to 3D motion).
+* **PID Controller** for precise trajectory and centering correction.
+* Closed-loop tracking for dynamic targets.
 
 ---
-🚀 Features
-🛸 Simulation
-ArduPilot SITL integration
-Gazebo physics-based drone simulation
-Iris-based UAV model
-Custom world configuration (iris_rubicon.sdf)
-👁️ Vision System
-YOLO-based object detection
-Multiple pretrained models supported
-Real-time RGB image processing
-Optional pose estimation pipeline
-🎯 Control System
-Visual servoing loop (image → motion)
-PID controller for trajectory correction
-Closed-loop tracking of detected targets
-⚙️ Requirements
-System dependencies
-ROS 2 (Humble recommended)
-ArduPilot SITL
-Gazebo
-Python ≥ 3.8
-Python dependencies
 
-Install required packages:
+## ⚙️ Requirements
 
-pip install numpy opencv-python torch ultralytics
+### System Dependencies
+* **ROS 2** (Humble recommended)
+* **ArduPilot SITL**
+* **Gazebo** (Classic or Ignition)
+* **Python** ≥ 3.8
 
-If using ROS 2 Python nodes:
+### Python Dependencies
+```bash
+pip install numpy opencv-python torch ultralytics rclpy
+```
 
-pip install rclpy
-🔧 Setup
-1. Clone repository
+---
+
+## 🔧 Setup & Execution
+
+### 1. Clone the Repository
+```bash
 git clone <your-repo-url>
 cd <repo-name>
-2. Launch simulation environment
+```
 
-Start Gazebo + drone simulation:
-
+### 2. Launch Simulation Environment
+```bash
 ros2 launch sim_env iris_rubicon.launch.py
+```
+**This command will:**
+* Launch the Gazebo world.
+* Spawn the drone model.
+* Initialize the ArduPilot SITL interface.
 
-This will:
-
-Launch Gazebo world
-Spawn the drone model
-Initialize ArduPilot interface
-3. Run vision pipeline
-
-Run the main vision system:
-
+### 3. Run Vision Pipeline
+Execute the detection node:
+```bash
 python3 vision_node.py
-
-Or run YOLO directly:
-
+# OR
 python3 rgb_yolo.py
-4. Run visual servoing controller
+```
 
-Start closed-loop control:
-
+### 4. Run Visual Servoing Controller
+In a new terminal, launch the PID control logic:
+```bash
 python3 yolo_PID_approach.py
+```
 
-This script:
+---
 
-Detects target using YOLO
-Computes image error
-Estimates position (optional 3D step)
-Sends control commands to ArduPilot
-🧪 Core Pipeline
-Camera Stream → YOLO Detection → Pose / Position Estimation → PID Controller → ArduPilot → Drone Motion
-🧠 Models
+## 🧪 Core Pipeline Logic
+The data flow follows this sequence:
+**Camera Stream** → **YOLO Detection** → **Position Estimation** → **PID Controller** → **ArduPilot** → **Drone Motion**
 
-The models/ directory contains pretrained neural networks:
+---
 
-best.pt → main detection model
-best-medium.pt → balanced speed/accuracy model
-yolo_m_100_epoch.pt → custom trained model
-yolov8n-seg.pt → segmentation model
+## 🧠 Models
+The `models/` directory contains pretrained neural networks optimized for different use cases:
 
-These models are used for real-time inference on simulated camera feeds.
+| Model File | Description |
+| :--- | :--- |
+| `best.pt` | Main detection model. |
+| `best-medium.pt` | Balanced speed/accuracy (YOLOv8m). |
+| `yolo_m_100_epoch.pt`| Custom trained model (100 epochs). |
+| `yolov8n-seg.pt` | Segmentation-specific model. |
 
-📡 Simulation Environment
+---
 
-Located in sim_env/:
+## 📡 Directory Structure
+* **`sim_env/`**: Contains simulation assets.
+    * `iris_rubicon.sdf`: Drone and world definitions.
+    * `iris_rubicon.launch.py`: Primary ROS 2 launch file.
+* **`screenshots/`**: Visual documentation of the simulation.
 
-iris_rubicon.sdf → defines drone + Gazebo world
-iris_rubicon.launch.py → ROS 2 launch file
-screenshots/ → visual outputs of simulation setup
-🎮 Visual Servoing Concept
+---
 
-The control loop is based on:
+## ⚠️ Critical Notes
+* **SITL Sync**: Ensure ArduPilot SITL is fully initialized and in a "GUIDED" or "LOITER" state before running control scripts.
+* **ROS 2 Topics**: Verify that the camera topic (e.g., `/camera/image_raw`) is active using `ros2 topic list`.
+* **Pathing**: Update model paths in the Python scripts if running from a different directory.
 
-Capturing image from drone camera
-Running YOLO detection on frame
-Computing error between target and image center
-Estimating depth / 3D position (optional step)
-Applying PID controller
-Sending velocity/position commands to ArduPilot
+---
 
-This enables autonomous target tracking in simulation.
+## 📌 Future Improvements
+* [ ] Multi-drone swarm simulation support.
+* [ ] SLAM integration for GPS-denied navigation.
+* [ ] Reinforcement Learning (RL) based control policies.
+* [ ] Direct MAVROS/MAVLink integration refinements.
 
-⚠️ Notes
-Ensure ArduPilot SITL is running before launching control scripts
-Verify ROS 2 topics for camera streams
-Model paths must be correct relative to working directory
-Gazebo and ArduPilot must be properly synchronized
-📌 Future Improvements
-Multi-drone simulation support
-Improved 3D depth estimation (SLAM / stereo vision)
-Reinforcement learning-based control
-Better integration with MAVROS / MAVLink
-Hardware deployment (real drone transfer)
-👥 Authors
-Zenith Simulation Team
-📜 License
+---
 
-Specify your license here (e.g., MIT, Apache 2.0)
+## 👥 Authors
+**Zenith Simulation Team** - *Polytechnique Montréal*
 
-🤝 Acknowledgements
-ArduPilot project
-Gazebo simulation environment
-Ultralytics YOLO models
-ROS 2 ecosystem
+## 📜 License
+Distributed under the MIT License. See `LICENSE` for more information.
+
+## 🤝 Acknowledgements
+* The **ArduPilot** Dev Team
+* **Open Robotics** (Gazebo/ROS 2)
+* **Ultralytics** (YOLOv8)
